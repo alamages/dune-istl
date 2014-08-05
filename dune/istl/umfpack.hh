@@ -314,7 +314,6 @@ namespace Dune {
      */
     virtual void apply(domain_type& x, range_type& b, InverseOperatorResult& res)
     {
-      double UMF_Apply_Info[UMFPACK_INFO];
       Caller::solve(UMFPACK_A,
                     umfpackMatrix_.getColStart(),
                     umfpackMatrix_.getRowIndex(),
@@ -323,14 +322,14 @@ namespace Dune {
                     reinterpret_cast<double*>(&b[0]),
                     UMF_Numeric,
                     UMF_Control,
-                    UMF_Apply_Info);
+                    UMF_Info);
 
       //this is a direct solver
       res.iterations = 1;
       res.converged = true;
-      res.elapsed = UMF_Apply_Info[UMFPACK_SOLVE_WALLTIME];
+      res.elapsed = UMF_Info[UMFPACK_SOLVE_WALLTIME];
 
-      printOnApply(UMF_Apply_Info);
+      printOnApply();
     }
 
     /**
@@ -349,7 +348,6 @@ namespace Dune {
      */
     void apply(T* x, T* b)
     {
-      double UMF_Apply_Info[UMFPACK_INFO];
       Caller::solve(UMFPACK_A,
                     umfpackMatrix_.getColStart(),
                     umfpackMatrix_.getRowIndex(),
@@ -358,8 +356,8 @@ namespace Dune {
                     b,
                     UMF_Numeric,
                     UMF_Control,
-                    UMF_Apply_Info);
-      printOnApply(UMF_Apply_Info);
+                    UMF_Info);
+      printOnApply();
     }
 
     /** @brief Set UMFPack-specific options
@@ -379,6 +377,23 @@ namespace Dune {
         DUNE_THROW(RangeError, "Requested non-existing UMFPack option");
 
       UMF_Control[option] = value;
+    }
+
+    /** @brief Get information from the UMFPack solver
+     *
+     * This method allows the user to extract specific information from the solver.
+     * It allows direct access to the UMF_Info array. Please see the UMFPack
+     * documentation for a list of available information.
+     *
+     * \param option the information to return (e.g. UMFPACK_NUMERIC_WALLTIME)
+     * \throws RangeError If non-existing information was requested.
+     */
+    double getInformation(unsigned int option)
+    {
+      if (option >= UMFPACK_INFO)
+        DUNE_THROW(RangeError, "Requested non-existing UMFPack option");
+
+      return UMF_Info[option];
     }
 
     /** @brief saves a decomposition to a file
@@ -455,7 +470,6 @@ namespace Dune {
     /** @brief computes the LU Decomposition */
     void decompose()
     {
-      double UMF_Decomposition_Info[UMFPACK_INFO];
       Caller::symbolic(static_cast<int>(umfpackMatrix_.N()),
                        static_cast<int>(umfpackMatrix_.N()),
                        umfpackMatrix_.getColStart(),
@@ -463,31 +477,31 @@ namespace Dune {
                        reinterpret_cast<double*>(umfpackMatrix_.getValues()),
                        &UMF_Symbolic,
                        UMF_Control,
-                       UMF_Decomposition_Info);
+                       UMF_Info);
       Caller::numeric(umfpackMatrix_.getColStart(),
                       umfpackMatrix_.getRowIndex(),
                       reinterpret_cast<double*>(umfpackMatrix_.getValues()),
                       UMF_Symbolic,
                       &UMF_Numeric,
                       UMF_Control,
-                      UMF_Decomposition_Info);
-      Caller::report_status(UMF_Control,UMF_Decomposition_Info[UMFPACK_STATUS]);
+                      UMF_Info);
+      Caller::report_status(UMF_Control,UMF_Info[UMFPACK_STATUS]);
       if (verbose == 1)
       {
         std::cout << "[UMFPack Decomposition]" << std::endl;
-        std::cout << "Wallclock Time taken: " << UMF_Decomposition_Info[UMFPACK_NUMERIC_WALLTIME] << " (CPU Time: " << UMF_Decomposition_Info[UMFPACK_NUMERIC_TIME] << ")" << std::endl;
-        std::cout << "Flops taken: " << UMF_Decomposition_Info[UMFPACK_FLOPS] << std::endl;
-        std::cout << "Peak Memory Usage: " << UMF_Decomposition_Info[UMFPACK_PEAK_MEMORY]*UMF_Decomposition_Info[UMFPACK_SIZE_OF_UNIT] << " bytes" << std::endl;
-        std::cout << "Condition number estimate: " << 1./UMF_Decomposition_Info[UMFPACK_RCOND] << std::endl;
-        std::cout << "Numbers of non-zeroes in decomposition: L: " << UMF_Decomposition_Info[UMFPACK_LNZ] << " U: " << UMF_Decomposition_Info[UMFPACK_UNZ] << std::endl;
+        std::cout << "Wallclock Time taken: " << UMF_Info[UMFPACK_NUMERIC_WALLTIME] << " (CPU Time: " << UMF_Info[UMFPACK_NUMERIC_TIME] << ")" << std::endl;
+        std::cout << "Flops taken: " << UMF_Info[UMFPACK_FLOPS] << std::endl;
+        std::cout << "Peak Memory Usage: " << UMF_Info[UMFPACK_PEAK_MEMORY]*UMF_Info[UMFPACK_SIZE_OF_UNIT] << " bytes" << std::endl;
+        std::cout << "Condition number estimate: " << 1./UMF_Info[UMFPACK_RCOND] << std::endl;
+        std::cout << "Numbers of non-zeroes in decomposition: L: " << UMF_Info[UMFPACK_LNZ] << " U: " << UMF_Info[UMFPACK_UNZ] << std::endl;
       }
       if (verbose == 2)
       {
-        Caller::report_info(UMF_Control,UMF_Decomposition_Info);
+        Caller::report_info(UMF_Control,UMF_Info);
       }
     }
 
-    void printOnApply(double* UMF_Info)
+    void printOnApply()
     {
       Caller::report_status(UMF_Control,UMF_Info[UMFPACK_STATUS]);
       if (verbose > 0)
@@ -508,6 +522,7 @@ namespace Dune {
     void *UMF_Symbolic;
     void *UMF_Numeric;
     double UMF_Control[UMFPACK_CONTROL];
+    double UMF_Info[UMFPACK_INFO];
   };
 
   template<typename T, typename A, int n, int m>
