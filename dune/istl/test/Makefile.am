@@ -21,7 +21,8 @@ if UMFPACK
 endif
 
 # which tests where program to build and run are equal
-NORMALTESTS = basearraytest \
+NORMALTESTS = backuprestoretest \
+              basearraytest \
               bcrsbuildtest \
               bcrsimplicitbuildtest \
               bvectortest \
@@ -97,6 +98,8 @@ if PARDISO
   test_pardiso_SOURCES = test_pardiso.cc
   test_pardiso_LDADD = $(PARDISO_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(LIBS) $(FLIBS)
 endif
+
+backuprestoretest_SOURCES = backuprestore.cc
 
 basearraytest_SOURCES = basearraytest.cc
 

@@ -1,4 +1,5 @@
 set(NORMALTEST
+  backuprestoretest
   basearraytest
   bvectortest
   bcrsbuildtest
@@ -50,6 +51,7 @@ add_dependencies(${_test_target} ${ALLTESTS})
 include(DuneMPI)
 
 # Provide source files
+add_executable(backuprestoretest "backuprestoretest.cc")
 add_executable(basearraytest "basearraytest.cc")
 add_executable(dotproducttest "dotproducttest.cc")
 add_executable(complexmatrixtest "complexmatrixtest.cc")
