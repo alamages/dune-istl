@@ -10,12 +10,6 @@
 #include<dune/common/fvector.hh>
 #include<dune/istl/bvector.hh>
 
-// TODO list
-// - find a way to properly pass the rank to facility
-// - evaluate whether this needs to be MPI_COMM_WORLD (see yasp)
-// - switch to binary mode
-// - test the restoring. it does not work until binary mode is on or separators are introduced.
-
 
 namespace Dune {
 
@@ -24,12 +18,12 @@ namespace Dune {
   {
     static void backup(const DATA& data, std::ofstream& stream)
     {
-      stream << data;
+      stream.write(reinterpret_cast<const char*>(&data), sizeof(DATA));
     }
 
     static void restore(DATA& data, std::ifstream& stream)
     {
-      stream >> data;
+      stream.read(reinterpret_cast<char*>(&data), sizeof(DATA));
     }
   };
 
@@ -78,15 +72,16 @@ namespace Dune {
   template<class V>
   struct ISTLBackupRestoreFacility
   {
-    template<class MPI>
-    static void backup(const V& vector, const std::string& filename, const MPI& mpi = Dune::FakeMPIHelper::instance(0,NULL))
+    template<class Comm = Dune::MPIHelper::MPICommunicator>
+    static void backup(const V& vector, const std::string& filename,
+                       typename Dune::CollectiveCommunication<Comm> comm = Dune::CollectiveCommunication<Comm>())
     {
       std::ostringstream filename_str;
       filename_str << filename;
-      if (!MPI::isFake)
-        filename_str << mpi.rank();
+      if (comm.size() > 0)
+        filename_str << comm.rank();
       std::ofstream file;
-      file.open(filename_str.str());
+      file.open(filename_str.str(), std::ios::out | std::ios::binary);
       if (file)
         ISTLBackupRestoreHelper<V>::backup(vector,file);
       else
@@ -94,15 +89,16 @@ namespace Dune {
       file.close();
     }
 
-    template<class MPI>
-    static void restore(V& vector, std::string filename, const MPI& mpi = Dune::FakeMPIHelper::instance(0,NULL))
+    template<class Comm = Dune::MPIHelper::MPICommunicator>
+    static void restore(V& vector, const std::string& filename, typename
+                        Dune::CollectiveCommunication<Comm> comm = Dune::CollectiveCommunication<Comm>())
     {
       std::ostringstream filename_str;
       filename_str << filename;
-      if (!MPI::isFake)
-        filename_str << mpi.rank();
+      if (comm.size() > 0)
+        filename_str << comm.rank();
       std::ifstream file;
-      file.open(filename_str.str());
+      file.open(filename_str.str(), std::ios::in | std::ios::binary);
       if (file)
         ISTLBackupRestoreHelper<V>::restore(vector,file);
       else

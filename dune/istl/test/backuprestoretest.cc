@@ -15,11 +15,11 @@ int main()
   v.resize(100);
   std::fill(v.begin(), v.end(), 5);
 
-  Dune::ISTLBackupRestoreFacility<V>::backup(v,"testbackup", Dune::FakeMPIHelper::instance(0,NULL));
+  Dune::ISTLBackupRestoreFacility<V>::backup(v,"testbackup");
 
   V w;
-  Dune::ISTLBackupRestoreFacility<V>::restore(w,"testbackup", Dune::FakeMPIHelper::instance(0,NULL));
-  Dune::ISTLBackupRestoreFacility<V>::backup(w,"testbackup2", Dune::FakeMPIHelper::instance(0,NULL));
+  Dune::ISTLBackupRestoreFacility<V>::restore(w,"testbackup");
+ // Dune::ISTLBackupRestoreFacility<V>::backup(w,"testbackup2");
 
   // test nestedness
   typedef Dune::BlockVector<Dune::BlockVector<Dune::FieldVector<double,1> > > NV;
@@ -31,7 +31,7 @@ int main()
     std::fill(nv[i].begin(), nv[i].end(), i);
   }
 
-  Dune::ISTLBackupRestoreFacility<NV>::backup(nv,"testbackup_nestes", Dune::FakeMPIHelper::instance(0,NULL));
+  Dune::ISTLBackupRestoreFacility<NV>::backup(nv,"testbackup_nestes");
 
   return 0;
 }
