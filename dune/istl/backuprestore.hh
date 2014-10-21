@@ -78,7 +78,7 @@ namespace Dune {
     {
       std::ostringstream filename_str;
       filename_str << filename;
-      if (comm.size() > 0)
+      if (comm.size() > 1)
         filename_str << comm.rank();
       std::ofstream file;
       file.open(filename_str.str(), std::ios::out | std::ios::binary);
@@ -95,7 +95,7 @@ namespace Dune {
     {
       std::ostringstream filename_str;
       filename_str << filename;
-      if (comm.size() > 0)
+      if (comm.size() > 1)
         filename_str << comm.rank();
       std::ifstream file;
       file.open(filename_str.str(), std::ios::in | std::ios::binary);
