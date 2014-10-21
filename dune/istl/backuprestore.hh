@@ -35,7 +35,8 @@ namespace Dune {
 
     static void backup(const Data& data, std::ofstream& stream)
     {
-      stream << data.size();
+      size_type size = data.size();
+      stream.write(reinterpret_cast<const char*>(&size), sizeof(size_type));
       for (size_type i=0; i<data.size(); i++)
         ISTLBackupRestoreHelper<Block>::backup(data[i],stream);
     }
@@ -43,7 +44,7 @@ namespace Dune {
     static void restore(Data& data, std::ifstream& stream)
     {
       size_type vsize;
-      stream >> vsize;
+      stream.read(reinterpret_cast<char*>(&vsize), sizeof(size_type));
       data.resize(vsize);
       for (size_type i = 0; i<vsize; i++)
         ISTLBackupRestoreHelper<Block>::restore(data[i], stream);
