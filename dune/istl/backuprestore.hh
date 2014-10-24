@@ -13,6 +13,27 @@
 
 namespace Dune {
 
+  // swap endianess if on a big endian architecture
+  template <typename T>
+  T convertToLittleEndian(T u)
+  {
+#ifdef HAVE_BIGENDIAN
+    union
+    {
+      T u;
+      unsigned char u8[sizeof(T)];
+    } source, dest;
+
+    source.u = u;
+
+    for (size_t k = 0; k < sizeof(T); k++)
+      dest.u8[k] = source.u8[sizeof(T) - k - 1];
+
+    return dest.u;
+#else
+    return u;
+#endif
+  }
 
   /** \brief update a fletcher64 checksum
    * \param data the pointer to the data
@@ -38,7 +59,7 @@ namespace Dune {
     }
     if (length > 0)
     {
-      // take 32 bits where only th leftmost length bits are part of the data
+      // take 32 bits where only the leftmost length bits are part of the data
       uint32_t rest = *data;
       // create a mask having 1s on all bits that are not part of the data
       uint32_t mask = 0;
@@ -61,15 +82,18 @@ namespace Dune {
   template<class DATA>
   void writeToStreamWithChecksum(const DATA& data, std::ofstream& stream, uint64_t& sum1, uint64_t& sum2)
   {
-    stream.write(reinterpret_cast<const char*>(&data), sizeof(DATA));
-    fletcher64(reinterpret_cast<const uint32_t*>(&data), sizeof(DATA), sum1, sum2);
+    DATA buffer = convertToLittleEndian(data);
+    stream.write(reinterpret_cast<const char*>(&buffer), sizeof(DATA));
+    fletcher64(reinterpret_cast<const uint32_t*>(&buffer), sizeof(DATA), sum1, sum2);
   }
 
   template<class DATA>
   void readFromStreamWithChecksum(DATA& data, std::ifstream& stream, uint64_t& sum1, uint64_t& sum2)
   {
-    stream.read(reinterpret_cast<char*>(&data), sizeof(DATA));
-    fletcher64(reinterpret_cast<const uint32_t*>(&data), sizeof(DATA), sum1, sum2);
+    DATA buffer;
+    stream.read(reinterpret_cast<char*>(&buffer), sizeof(DATA));
+    fletcher64(reinterpret_cast<const uint32_t*>(&buffer), sizeof(DATA), sum1, sum2);
+    data = convertToLittleEndian(buffer);
   }
 
   template<class DATA>
