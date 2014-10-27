@@ -86,7 +86,7 @@ namespace Dune {
   {
     DATA buffer = convertToLittleEndian(data);
     stream.write(reinterpret_cast<const char*>(&buffer), sizeof(DATA));
-    fletcher64(reinterpret_cast<const uint32_t*>(&buffer), sizeof(DATA), sum1, sum2);
+    fletcher64(reinterpret_cast<const uint32_t*>(&data), sizeof(DATA), sum1, sum2);
   }
 
   template<class DATA>
@@ -94,8 +94,8 @@ namespace Dune {
   {
     DATA buffer;
     stream.read(reinterpret_cast<char*>(&buffer), sizeof(DATA));
-    fletcher64(reinterpret_cast<const uint32_t*>(&buffer), sizeof(DATA), sum1, sum2);
     data = convertToLittleEndian(buffer);
+    fletcher64(reinterpret_cast<const uint32_t*>(&data), sizeof(DATA), sum1, sum2);
   }
 
   template<class DATA>
