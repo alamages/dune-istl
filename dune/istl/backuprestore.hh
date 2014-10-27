@@ -118,7 +118,7 @@ namespace Dune {
 
     static void backup(const Data& data, std::ofstream& stream, uint64_t& sum1, uint64_t& sum2)
     {
-      size_type size = data.size();
+      uint64_t size = static_cast<uint64_t>(data.size());
       writeToStreamWithChecksum(size, stream, sum1, sum2);
       for (size_type i=0; i<data.size(); i++)
         ISTLBackupRestoreHelper<Block>::backup(data[i], stream, sum1, sum2);
@@ -126,9 +126,9 @@ namespace Dune {
 
     static void restore(Data& data, std::ifstream& stream, uint64_t& sum1, uint64_t& sum2)
     {
-      size_type size;
+      uint64_t size;
       readFromStreamWithChecksum(size, stream, sum1, sum2);
-      data.resize(size);
+      data.resize(static_cast<size_type>(size));
       for (size_type i = 0; i<size; i++)
         ISTLBackupRestoreHelper<Block>::restore(data[i], stream, sum1, sum2);
     }
