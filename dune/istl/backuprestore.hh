@@ -51,9 +51,11 @@ namespace Dune {
     {
       // update the checksum
       sum1 += *data;
-      sum1 &= 0xffffffff;
+      sum1 %= 4294967295;
+      //sum1 &= 0xffffffff;
       sum2 += sum1;
-      sum2 &= 0xffffffff;
+//      sum2 &= 0xffffffff;
+      sum2 %= 4294967295;
       length -= 4;
       ++data;
     }
