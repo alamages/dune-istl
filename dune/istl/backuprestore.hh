@@ -180,6 +180,7 @@ namespace Dune {
         sum1 += sum2;
 
         // write the checksum to the file
+        sum1 = convertToLittleEndian(sum1);
         file.write(reinterpret_cast<char*>(&sum1), sizeof(uint64_t));
       }
       else
@@ -211,6 +212,7 @@ namespace Dune {
         sum1 += sum2;
 
         // read checksum from file
+        sum1 = convertToLittleEndian(sum1);
         file.read(reinterpret_cast<char*>(&sum2), sizeof(uint64_t));
 
         // compare the checksums
