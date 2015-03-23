@@ -1136,7 +1136,7 @@ namespace Dune
             std::cout<<"Creating grah one 1 process took "<<time.elapsed()<<std::endl;
           time.reset();
           options[0]=0; options[1]=1; options[2]=1; options[3]=3; options[4]=3;
-#if METIS_VER_MAJOR > 4
+#if METIS_VER_MAJOR >= 5
           idxtype moptions[METIS_NOPTIONS];
           METIS_SetDefaultOptions(moptions);
           moptions[METIS_OPTION_NUMBERING] = numflag;
